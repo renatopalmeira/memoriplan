@@ -1,0 +1,8 @@
+[build]
+  publish = "."
+
+# Redirecionar / para /index.html
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
