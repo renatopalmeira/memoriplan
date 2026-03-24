@@ -6,10 +6,10 @@
 -- ===== STUDY_SESSIONS — Usuários só editam suas próprias sessões =====
 
 -- Deletar políticas antigas (se existirem)
-DROP POLICY IF EXISTS "users_read_own_sessions" ON study_sessions;
-DROP POLICY IF EXISTS "users_create_own_sessions" ON study_sessions;
-DROP POLICY IF EXISTS "users_update_own_sessions" ON study_sessions;
-DROP POLICY IF EXISTS "users_delete_own_sessions" ON study_sessions;
+DROP POLICY IF EXISTS "Users can read their own sessions" ON study_sessions;
+DROP POLICY IF EXISTS "Users can create own sessions" ON study_sessions;
+DROP POLICY IF EXISTS "Users can update their own sessions" ON study_sessions;
+DROP POLICY IF EXISTS "Users can delete their own sessions" ON study_sessions;
 
 -- Ativar RLS
 ALTER TABLE study_sessions ENABLE ROW LEVEL SECURITY;
@@ -37,8 +37,9 @@ USING (auth.uid() = user_id);
 
 -- ===== CRONOGRAMA_PROGRESS — Usuários só gerenciam seu próprio progresso =====
 
-DROP POLICY IF EXISTS "users_read_own_progress" ON cronograma_progress;
-DROP POLICY IF EXISTS "users_upsert_own_progress" ON cronograma_progress;
+DROP POLICY IF EXISTS "Users can read their own progress" ON cronograma_progress;
+DROP POLICY IF EXISTS "Users can upsert their own progress" ON cronograma_progress;
+DROP POLICY IF EXISTS "Users can update their own progress" ON cronograma_progress;
 
 ALTER TABLE cronograma_progress ENABLE ROW LEVEL SECURITY;
 
@@ -57,8 +58,9 @@ WITH CHECK (auth.uid() = user_id);
 
 -- ===== USER_SETTINGS — Usuários só editam suas próprias configurações =====
 
-DROP POLICY IF EXISTS "users_read_own_settings" ON user_settings;
-DROP POLICY IF EXISTS "users_upsert_own_settings" ON user_settings;
+DROP POLICY IF EXISTS "Users can read their own settings" ON user_settings;
+DROP POLICY IF EXISTS "Users can upsert their own settings" ON user_settings;
+DROP POLICY IF EXISTS "Users can update their own settings" ON user_settings;
 
 ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 
