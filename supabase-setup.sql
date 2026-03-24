@@ -18,7 +18,7 @@ create table if not exists study_sessions (
 );
 
 -- Index para buscar sessões do usuário por data
-create index idx_sessions_user_date on study_sessions(user_id, date desc);
+create index if not exists idx_sessions_user_date on study_sessions(user_id, date desc);
 
 -- 2. TABELA DE PROGRESSO DO CRONOGRAMA (checklist)
 create table if not exists cronograma_progress (
@@ -30,7 +30,7 @@ create table if not exists cronograma_progress (
   unique(user_id, check_key)
 );
 
-create index idx_progress_user on cronograma_progress(user_id);
+create index if not exists idx_progress_user on cronograma_progress(user_id);
 
 -- 3. TABELA DE CONFIGURAÇÕES DO ALUNO
 create table if not exists user_settings (
