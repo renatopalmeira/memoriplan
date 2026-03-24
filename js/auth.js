@@ -36,8 +36,8 @@ async function loginEmail(email, password) {
   if (!validateEmail(email)) {
     return { error: 'E-mail inválido' };
   }
-  if (password.length < 6) {
-    return { error: 'Senha deve ter pelo menos 6 caracteres' };
+  if (password.length < 8) {
+    return { error: 'Senha deve ter pelo menos 8 caracteres' };
   }
   
   try {

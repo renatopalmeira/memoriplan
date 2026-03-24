@@ -87,7 +87,7 @@ body::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:2
 
   <div class="form-group">
     <label class="form-label">Senha</label>
-    <input class="form-input" id="inputPass" type="password" placeholder="Mínimo 6 caracteres">
+    <input class="form-input" id="inputPass" type="password" placeholder="Mínimo 8 caracteres">
   </div>
 
   <button class="btn-primary" id="btnSubmit" onclick="handleSubmit()">Entrar</button>
@@ -149,8 +149,8 @@ async function handleSubmit() {
     errEl.classList.add('show');
     return;
   }
-  if (pass.length < 6) {
-    errEl.textContent = 'A senha precisa ter pelo menos 6 caracteres.';
+  if (pass.length < 8) {
+    errEl.textContent = 'A senha precisa ter pelo menos 8 caracteres.';
     errEl.classList.add('show');
     return;
   }

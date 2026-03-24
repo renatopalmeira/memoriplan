@@ -329,9 +329,9 @@ body{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;background:var(--b
 <div class="period-filter-row">
   <span class="period-label" id="periodLabel">Exibindo dados do mês atual</span>
   <div class="period-pills">
-    <button class="period-pill" onclick="setPeriod('week')">Semana</button>
-    <button class="period-pill active" onclick="setPeriod('month')">Mês</button>
-    <button class="period-pill" onclick="setPeriod('all')">Todo o tempo</button>
+    <button class="period-pill" data-period="week" onclick="setPeriod('week')">Semana</button>
+    <button class="period-pill active" data-period="month" onclick="setPeriod('month')">Mês</button>
+    <button class="period-pill" data-period="all" onclick="setPeriod('all')">Todo o tempo</button>
   </div>
 </div>
 
@@ -496,7 +496,7 @@ function setPeriod(p) {
   activePeriod = p;
   // atualizar pills
   document.querySelectorAll('.period-pill').forEach(btn => {
-    btn.classList.toggle('active', btn.textContent.trim() === {week:'Semana',month:'Mês',all:'Todo o tempo'}[p]);
+    btn.classList.toggle('active', btn.dataset.period === p);
   });
   // atualizar label
   const labels = {week:'Exibindo dados da semana atual', month:'Exibindo dados do mês atual', all:'Exibindo todo o histórico'};
