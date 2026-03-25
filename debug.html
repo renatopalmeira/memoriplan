@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MemoriPlan — Debug Console</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: monospace; background: #1a1a1a; color: #00ff00; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    h1 { margin-bottom: 10px; color: #ff4444; }
+    .section { background: #222; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 3px solid #00ff00; }
+    .check { margin: 8px 0; padding: 8px; background: #1a1a1a; border-radius: 3px; }
+    .ok { color: #00ff00; }
+    .error { color: #ff4444; }
+    .warn { color: #ffaa00; }
+    .info { color: #4488ff; }
+    button { background: #00ff00; color: #1a1a1a; border: none; padding: 8px 15px; border-radius: 3px; cursor: pointer; font-weight: bold; margin: 5px; }
+    button:hover { background: #00dd00; }
+    textarea { width: 100%; height: 200px; background: #1a1a1a; color: #00ff00; border: 1px solid #00ff00; padding: 10px; border-radius: 3px; font-family: monospace; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🔧 MemoriPlan — Debug Console</h1>
+  
+  <div class="section">
+    <h2>📊 Status do Sistema</h2>
+    <div id="status"></div>
+  </div>
+
+  <div class="section">
+    <h2>🔐 Autenticação</h2>
+    <div id="auth"></div>
+    <button onclick="testAuth()">🧪 Testar Autenticação</button>
+  </div>
+
+  <div class="section">
+    <h2>🗄️ Conexão Supabase</h2>
+    <div id="supabase"></div>
+    <button onclick="testSupabase()">🧪 Testar Conexão</button>
+  </div>
+
+  <div class="section">
+    <h2>📡 CORS & Network</h2>
+    <div id="network"></div>
+    <button onclick="testCORS()">🧪 Testar CORS</button>
+  </div>
+
+  <div class="section">
+    <h2>📝 Dados do Usuário</h2>
+    <div id="userData"></div>
+    <button onclick="loadUserData()">📥 Carregar Dados</button>
+  </div>
+
+  <div class="section">
+    <h2>💾 LocalStorage & Cookies</h2>
+    <div id="storage"></div>
+    <button onclick="clearStorage()">🗑️ Limpar Tudo</button>
+  </div>
+
+  <div class="section">
+    <h2>🐛 Console Histórico</h2>
+    <textarea id="logs" readonly></textarea>
+    <button onclick="clearLogs()">Limpar Logs</button>
+  </div>
+</div>
+
+<!-- Scripts carregados da app -->
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+
+<script>
+  // Capturar logs
+  const _originalLog = console.log;
+  const _originalError = console.error;
+  const _originalWarn = console.warn;
+  
+  function addLog(msg, type = 'info') {
+    const textarea = document.getElementById('logs');
+    const time = new Date().toLocaleTimeString();
+    textarea.value += `[${time}] ${type.toUpperCase()}: ${msg}\n`;
+    textarea.scrollTop = textarea.scrollHeight;
+  }
+
+  console.log = function(...args) {
+    _originalLog(...args);
+    addLog(args.join(' '), 'info');
+  };
+
+  console.error = function(...args) {
+    _originalError(...args);
+    addLog(args.join(' '), 'error');
+  };
+
+  console.warn = function(...args) {
+    _originalWarn(...args);
+    addLog(args.join(' '), 'warn');
+  };
+
+  // Status inicial
+  window.addEventListener('load', function() {
+    checkStatus();
+  });
+
+  function checkStatus() {
+    let html = '';
+    
+    // Verificar Supabase
+    if (window.supabase) {
+      html += `<div class="check"><span class="ok">✓</span> Supabase SDK carregado</div>`;
+    } else {
+      html += `<div class="check"><span class="error">✗</span> Supabase SDK NÃO carregado</div>`;
+    }
+
+    // Verificar sb global
+    if (typeof sb !== 'undefined' && sb !== null) {
+      html += `<div class="check"><span class="ok">✓</span> Cliente Supabase inicializado</div>`;
+    } else {
+      html += `<div class="check"><span class="error">✗</span> Cliente Supabase NÃO inicializado</div>`;
+    }
+
+    // Verificar URL
+    if (typeof SUPABASE_URL !== 'undefined') {
+      html += `<div class="check"><span class="ok">✓</span> URL: <span class="info">${SUPABASE_URL.substring(0, 40)}...</span></div>`;
+    } else {
+      html += `<div class="check"><span class="error">✗</span> SUPABASE_URL não definida</div>`;
+    }
+
+    // Verificar Key
+    if (typeof SUPABASE_ANON_KEY !== 'undefined') {
+      html += `<div class="check"><span class="ok">✓</span> Anon Key carregada (${SUPABASE_ANON_KEY.substring(0, 20)}...)</div>`;
+    } else {
+      html += `<div class="check"><span class="error">✗</span> SUPABASE_ANON_KEY não definida</div>`;
+    }
+
+    // Verificar Network
+    if (navigator.onLine) {
+      html += `<div class="check"><span class="ok">✓</span> Conexão com internet: Ativa</div>`;
+    } else {
+      html += `<div class="check"><span class="error">✗</span> Sem conexão com internet</div>`;
+    }
+
+    document.getElementById('status').innerHTML = html;
+  }
+
+  async function testAuth() {
+    let html = '<div class="info">⏳ Testando autenticação...</div>';
+    document.getElementById('auth').innerHTML = html;
+
+    try {
+      const user = await getCurrentUser();
+      if (user) {
+        html = `<div class="check"><span class="ok">✓</span> Usuário logado: <strong>${user.email}</strong></div>`;
+        html += `<div class="check">ID: ${user.id}</div>`;
+      } else {
+        html = `<div class="check"><span class="warn">⚠</span> Nenhum usuário logado (esperado se não fez login)</div>`;
+      }
+    } catch (e) {
+      html = `<div class="check"><span class="error">✗</span> ERRO: ${e.message}</div>`;
+    }
+    document.getElementById('auth').innerHTML = html;
+  }
+
+  async function testSupabase() {
+    let html = '<div class="info">⏳ Testando Supabase...</div>';
+    document.getElementById('supabase').innerHTML = html;
+
+    try {
+      if (!sb) {
+        throw new Error('Cliente Supabase não inicializado');
+      }
+
+      // Teste 1: Testar se consegue acessar a tabela
+      const { data, error } = await sb.from('user_settings').select('count', { count: 'exact' });
+      
+      if (error) {
+        html = `<div class="check"><span class="error">✗</span> Erro ao acessar tabela: ${error.message}</div>`;
+      } else {
+        html = `<div class="check"><span class="ok">✓</span> Conexão com Supabase: OK</div>`;
+        html += `<div class="check">Tabela 'user_settings' acessível</div>`;
+      }
+    } catch (e) {
+      html = `<div class="check"><span class="error">✗</span> ERRO: ${e.message}</div>`;
+    }
+    document.getElementById('supabase').innerHTML = html;
+  }
+
+  async function testCORS() {
+    let html = '<div class="info">⏳ Testando CORS...</div>';
+    document.getElementById('network').innerHTML = html;
+
+    try {
+      const response = await fetch(SUPABASE_URL + '/auth/v1/health', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (response.ok) {
+        html = `<div class="check"><span class="ok">✓</span> CORS OK - Supabase responde</div>`;
+        html += `<div class="check">Status: ${response.status}</div>`;
+      } else {
+        html = `<div class="check"><span class="warn">⚠</span> Status inesperado: ${response.status}</div>`;
+      }
+    } catch (e) {
+      html = `<div class="check"><span class="error">✗</span> ERRO CORS: ${e.message}</div>`;
+      html += `<div class="warn">Possível problema: Domínio não autorizado no Supabase</div>`;
+    }
+    document.getElementById('network').innerHTML = html;
+  }
+
+  async function loadUserData() {
+    let html = '<div class="info">⏳ Carregando dados...</div>';
+    document.getElementById('userData').innerHTML = html;
+
+    try {
+      const user = await getCurrentUser();
+      if (!user) {
+        html = `<div class="warn">⚠ Nenhum usuário logado</div>`;
+      } else {
+        const settings = await Data.getSettings();
+        html = `<div class="check"><span class="ok">✓</span> Dados do usuário:</div>`;
+        html += `<pre class="info">${JSON.stringify({ user, settings }, null, 2)}</pre>`;
+      }
+    } catch (e) {
+      html = `<div class="check"><span class="error">✗</span> ERRO: ${e.message}</div>`;
+    }
+    document.getElementById('userData').innerHTML = html;
+  }
+
+  function checkStorage() {
+    let html = '';
+    
+    // LocalStorage
+    html += `<div class="info">📦 LocalStorage (${localStorage.length} itens):</div>`;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      const value = localStorage.getItem(key).substring(0, 50);
+      html += `<div class="check">${key}: ${value}${localStorage.getItem(key).length > 50 ? '...' : ''}</div>`;
+    }
+
+    // SessionStorage
+    html += `<div class="info" style="margin-top:10px">📦 SessionStorage (${sessionStorage.length} itens):</div>`;
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      const value = sessionStorage.getItem(key).substring(0, 50);
+      html += `<div class="check">${key}: ${value}${sessionStorage.getItem(key).length > 50 ? '...' : ''}</div>`;
+    }
+
+    // Cookies
+    html += `<div class="info" style="margin-top:10px">📦 Cookies:</div>`;
+    if (document.cookie) {
+      html += `<div class="check">${document.cookie}</div>`;
+    } else {
+      html += `<div class="warn">Nenhum cookie encontrado</div>`;
+    }
+
+    document.getElementById('storage').innerHTML = html;
+  }
+
+  function clearStorage() {
+    if (confirm('Tem certeza? Isso vai limpar TUDO (localStorage, sessionStorage, cookies)')) {
+      localStorage.clear();
+      sessionStorage.clear();
+      document.cookie.split(';').forEach(cookie => {
+        document.cookie = cookie.split('=')[0] + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC;';
+      });
+      alert('Armazenamento limpo! Recarregue a página.');
+      checkStorage();
+    }
+  }
+
+  function clearLogs() {
+    document.getElementById('logs').value = '';
+  }
+
+  // Carregar storage ao iniciar
+  checkStorage();
+</script>
+
+</body>
+</html>

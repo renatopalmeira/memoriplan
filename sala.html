@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="/img/logo-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sala de Estudo — MemoriPlan</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg:#F7F5F0;--bg-card:#FFFFFF;--text-primary:#1A1A1A;--text-secondary:#6B6B6B;--text-muted:#9E9E9E;
+  --border:#E8E5DE;--border-light:#F0EDE6;
+  --accent:#E8384F;--accent-soft:#FEE8EB;--accent-hover:#D42F44;
+  --success:#22C55E;--success-soft:#DCFCE7;
+  --warning:#F59E0B;--warning-soft:#FEF3C7;
+  --info:#3B82F6;--info-soft:#DBEAFE;
+  --purple:#8B5CF6;--purple-soft:#EDE9FE;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.04),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 12px rgba(0,0,0,.06),0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg:0 10px 30px rgba(0,0,0,.08),0 4px 8px rgba(0,0,0,.04);
+  --radius:14px;--radius-sm:8px;--radius-lg:20px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',-apple-system,sans-serif;background:var(--bg);color:var(--text-primary);line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#1A1A1A 0%,#2D2D2D 50%,#1A1A1A 100%);padding:40px 24px 80px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 40%,rgba(232,56,79,.12) 0%,transparent 60%),radial-gradient(circle at 70% 60%,rgba(34,197,94,.06) 0%,transparent 60%);animation:heroGlow 20s ease-in-out infinite}
+@keyframes heroGlow{0%,100%{transform:translate(0,0)}50%{transform:translate(-5%,-3%)}}
+.hero-content{position:relative;z-index:1;max-width:900px;margin:0 auto}
+.hero-nav{display:flex;justify-content:center;gap:8px;margin-bottom:28px}
+.hero-nav a{color:rgba(255,255,255,.4);font-size:12px;font-weight:600;text-decoration:none;padding:6px 14px;border-radius:20px;transition:all .3s;letter-spacing:.04em;text-transform:uppercase}
+.hero-nav a:hover{color:rgba(255,255,255,.7);background:rgba(255,255,255,.05)}
+.hero-nav a.active{color:#fff;background:var(--accent)}
+.hero h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(26px,4.5vw,38px);font-weight:800;color:#fff;letter-spacing:-.03em;line-height:1.1;margin-bottom:6px}
+.hero h1 em{font-style:normal;color:var(--success)}
+.hero p{font-size:14px;color:rgba(255,255,255,.4)}
+.live-dot{display:inline-block;width:8px;height:8px;background:var(--success);border-radius:50%;margin-right:6px;animation:livePulse 2s ease-in-out infinite}
+@keyframes livePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+/* STATS STRIP */
+.stats-strip{max-width:900px;margin:-50px auto 0;padding:0 16px;position:relative;z-index:2}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat-card{background:var(--bg-card);border-radius:var(--radius);padding:20px 16px;box-shadow:var(--shadow-lg);text-align:center;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.red::before{background:linear-gradient(90deg,var(--accent),#FF6B6B)}
+.stat-card.green::before{background:linear-gradient(90deg,#22C55E,#4ADE80)}
+.stat-card.blue::before{background:linear-gradient(90deg,#3B82F6,#60A5FA)}
+.stat-card.purple::before{background:linear-gradient(90deg,#8B5CF6,#A78BFA)}
+.stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
+.stat-card.red .stat-icon{background:var(--accent-soft);color:var(--accent)}
+.stat-card.green .stat-icon{background:var(--success-soft);color:var(--success)}
+.stat-card.blue .stat-icon{background:var(--info-soft);color:var(--info)}
+.stat-card.purple .stat-icon{background:var(--purple-soft);color:var(--purple)}
+.stat-value{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:var(--text-primary);line-height:1;margin-bottom:2px}
+.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)}
+
+/* MAIN LAYOUT */
+.main-content{max-width:900px;margin:24px auto;padding:0 16px 80px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){.main-content{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(2,1fr)}}
+.full-width{grid-column:1/-1}
+
+/* CARDS */
+.card{background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:24px;position:relative;overflow:hidden}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.card-title{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px}
+.card-title .title-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-title .title-icon.green{background:var(--success-soft);color:var(--success)}
+.card-title .title-icon.red{background:var(--accent-soft);color:var(--accent)}
+.card-title .title-icon.blue{background:var(--info-soft);color:var(--info)}
+.card-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:var(--success-soft);color:var(--success)}
+.card-badge.offline{background:var(--border-light);color:var(--text-muted)}
+
+/* PRESENCE GRID */
+.presence-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px}
+.member-card{display:flex;flex-direction:column;align-items:center;padding:16px 8px;border-radius:var(--radius);background:var(--bg);border:1.5px solid var(--border);transition:all .25s;position:relative}
+.member-card.studying{border-color:var(--success);background:var(--success-soft)}
+.member-card.me{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.member-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:800;color:#fff;margin-bottom:8px;position:relative;flex-shrink:0}
+.avatar-ring{position:absolute;inset:-3px;border-radius:50%;border:2px solid var(--success);animation:ringPulse 2s ease-in-out infinite}
+@keyframes ringPulse{0%,100%{opacity:.8;transform:scale(1)}50%{opacity:.3;transform:scale(1.1)}}
+.member-name{font-size:11px;font-weight:700;text-align:center;color:var(--text-primary);word-break:break-word;line-height:1.2;margin-bottom:4px;max-width:100%}
+.member-timer{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:var(--text-secondary)}
+.member-timer.active{color:var(--success)}
+.member-status{font-size:10px;font-weight:600;margin-top:3px}
+.member-status.studying{color:var(--success)}
+.member-status.online{color:var(--text-muted)}
+
+/* RANKING LIST */
+.rank-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:var(--radius-sm);transition:background .2s;cursor:default}
+.rank-item:hover{background:var(--bg)}
+.rank-item.me{background:var(--accent-soft)}
+.rank-item+.rank-item{border-top:1px solid var(--border-light)}
+.rank-pos{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:800;min-width:32px;text-align:center;color:var(--text-muted)}
+.rank-pos.gold{color:#F59E0B}
+.rank-pos.silver{color:#94A3B8}
+.rank-pos.bronze{color:#D97706}
+.rank-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.rank-info{flex:1;min-width:0}
+.rank-name{font-size:14px;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-sub{font-size:11px;color:var(--text-muted);font-weight:500}
+.rank-sub.studying{color:var(--success);font-weight:600}
+.rank-time{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:var(--text-primary);text-align:right;white-space:nowrap}
+
+/* MY STATUS CARD */
+.my-status-card{background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:20px 22px;position:relative;overflow:hidden;display:flex;align-items:center;gap:16px}
+.my-status-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--success),#4ADE80)}
+.my-status-card.idle::before{background:linear-gradient(90deg,var(--border),var(--border-light))}
+.my-status-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;position:relative}
+.my-status-avatar .avatar-ring{position:absolute;inset:-3px;border-radius:50%;border:2px solid var(--success);animation:ringPulse 2s ease-in-out infinite}
+.my-status-body{flex:1;min-width:0}
+.my-status-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:2px}
+.my-status-timer{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:var(--text-primary);line-height:1}
+.my-status-timer.active{color:var(--success)}
+.my-status-disc{font-size:12px;color:var(--text-secondary);margin-top:3px;font-weight:600}
+.my-status-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.status-go-btn{border:none;border-radius:20px;padding:8px 16px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;background:var(--accent);color:#fff;text-decoration:none;display:inline-block;white-space:nowrap}
+.status-go-btn:hover{background:var(--accent-hover);transform:scale(1.04)}
+
+/* EMPTY STATE */
+.empty-state{padding:32px 16px;text-align:center;color:var(--text-muted);font-size:13px;font-weight:500}
+.empty-state svg{width:40px;height:40px;margin:0 auto 12px;display:block;opacity:.3}
+
+/* LOADING */
+.loading-overlay{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;gap:12px;color:var(--text-muted);font-size:13px}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--success);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CONNECTION STATUS */
+.conn-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:var(--warning-soft);color:var(--warning)}
+.conn-badge.connected{background:var(--success-soft);color:var(--success)}
+.conn-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* RANK TABS */
+.rank-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px}
+.rank-tab{border:none;border-radius:20px;padding:5px 14px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;background:var(--border-light);color:var(--text-muted)}
+.rank-tab.active{background:var(--accent);color:#fff}
+.rank-tab:hover:not(.active){background:var(--border);color:var(--text-primary)}
+
+/* RANKING ROWS (override/extend for sub-metrics) */
+.rank-live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--success);margin-left:5px;animation:livePulse 2s ease-in-out infinite;vertical-align:middle;flex-shrink:0}
+.rank-sub{font-size:11px;color:var(--text-muted);font-weight:500;margin-top:1px}
+.rank-sub.studying{color:var(--success);font-weight:600}
+
+/* PODIUM STAT */
+.podium-stat{padding:14px 14px 8px}
+.podium-stat .stat-label{margin-top:8px}
+.podium-row{display:flex;align-items:center;gap:6px;padding:3px 0}
+.podium-medal{font-size:14px;line-height:1;flex-shrink:0}
+.podium-name{font-size:11px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-primary)}
+.podium-hrs{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;color:var(--text-muted);white-space:nowrap;flex-shrink:0}
+
+/* LIVE NOW GRID */
+.live-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+.live-card{background:var(--success-soft);border:1.5px solid var(--success);border-radius:var(--radius);padding:14px 10px;text-align:center;transition:transform .2s}
+.live-card:hover{transform:translateY(-2px)}
+.live-card-me{border-color:var(--accent);background:var(--accent-soft)}
+.live-card-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:800;color:#fff;margin:0 auto 8px;position:relative}
+.live-card-ring{position:absolute;inset:-3px;border-radius:50%;border:2px solid var(--success);animation:ringPulse 2s ease-in-out infinite}
+.live-card-me .live-card-ring{border-color:var(--accent)}
+.live-card-name{font-size:11px;font-weight:700;color:var(--text-primary);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.live-card-timer{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:var(--success)}
+.live-card-me .live-card-timer{color:var(--accent)}
+.live-card-disc{font-size:10px;color:var(--text-secondary);font-weight:600;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-nav">
+      <a href="index.html">Painel</a>
+      <a href="cronograma.html">Cronograma</a>
+      <a href="sessoes.html">Sessões</a>
+      <a href="sala.html" class="active">Sala de Estudo</a>
+    </div>
+    <h1>Sala de <em>Estudo</em></h1>
+    <p><span class="live-dot"></span><span id="heroSub">Conectando à sala...</span></p>
+  </div>
+</div>
+
+<div class="stats-strip">
+  <div class="stats-grid">
+    <div class="stat-card green">
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </div>
+      <div class="stat-value" id="statStudying">0</div>
+      <div class="stat-label">Estudando Agora</div>
+    </div>
+    <div class="stat-card blue podium-stat">
+      <div id="podiumMini">
+        <div class="podium-row"><span class="podium-medal">🥇</span><span class="podium-name" style="color:var(--text-muted)">—</span></div>
+        <div class="podium-row"><span class="podium-medal">🥈</span><span class="podium-name" style="color:var(--text-muted)">—</span></div>
+        <div class="podium-row"><span class="podium-medal">🥉</span><span class="podium-name" style="color:var(--text-muted)">—</span></div>
+      </div>
+      <div class="stat-label" id="podiumPeriodLabel">Top 3 — Hoje</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <div class="stat-value" id="statMyPos">—</div>
+      <div class="stat-label">Minha Posição</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="stat-value" id="statOnline">0</div>
+      <div class="stat-label">Online na Sala</div>
+    </div>
+  </div>
+</div>
+
+<div class="main-content">
+
+  <!-- Left Column: Status + Presença -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+
+    <!-- Meu Status -->
+    <div class="my-status-card idle" id="myStatusCard">
+      <div class="my-status-avatar" id="myStatusAvatar" style="background:#9E9E9E">?</div>
+      <div class="my-status-body">
+        <div class="my-status-label" id="myStatusLabel">Meu Status</div>
+        <div class="my-status-timer" id="myStatusTimer">—</div>
+        <div class="my-status-disc" id="myStatusDisc">Nenhuma sessão ativa</div>
+      </div>
+      <div class="my-status-actions">
+        <span class="conn-badge" id="connBadge"><span class="conn-dot"></span>Conectando</span>
+        <a href="sessoes.html" class="status-go-btn" id="statusGoBtn">Ir Estudar →</a>
+      </div>
+    </div>
+
+    <!-- Ao Vivo Agora -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="title-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          </div>
+          Ao Vivo Agora
+        </div>
+        <span class="card-badge" id="liveBadge">0</span>
+      </div>
+      <div id="liveGrid" class="live-grid">
+        <div class="loading-overlay" style="grid-column:1/-1">
+          <div class="spinner"></div>
+          <span>Carregando...</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Column: Ranking -->
+  <div>
+    <div class="card" style="height:fit-content">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="title-icon red">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          Ranking de Estudo
+        </div>
+        <span class="card-badge offline" id="rankingBadge">Carregando</span>
+      </div>
+      <div class="rank-tabs">
+        <button class="rank-tab active" data-period="today">Hoje</button>
+        <button class="rank-tab" data-period="week">Semana</button>
+        <button class="rank-tab" data-period="month">Mês</button>
+        <button class="rank-tab" data-period="total">Total</button>
+      </div>
+      <div id="rankingList">
+        <div class="loading-overlay"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script defer src="js/config.js"></script>
+<script defer src="js/auth.js"></script>
+<script defer src="js/data.js"></script>
+<script defer src="js/nav.js"></script>
+<script>
+// ===== CONSTANTS =====
+const TIMER_KEY = 'memoriplan_timer_state';
+const COLORS = ['#E8384F','#F59E0B','#10B981','#3B82F6','#8B5CF6','#EC4899','#06B6D4','#F97316','#14B8A6','#84CC16'];
+
+function avatarColor(userId) {
+  const n = parseInt((userId||'').replace(/-/g,'').substring(0,8),16)||0;
+  return COLORS[n % COLORS.length];
+}
+function initials(name) {
+  if (!name) return '?';
+  const p = name.trim().split(/\s+/);
+  return p.length === 1 ? p[0].substring(0,2).toUpperCase() : (p[0][0]+p[p.length-1][0]).toUpperCase();
+}
+function fmtSecs(secs) {
+  const s = Math.max(0,Math.floor(secs));
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), ss = s%60;
+  return h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}` : `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+}
+function fmtMins(mins) {
+  const m = Math.max(0, mins);
+  if (m < 1) return '0min';
+  if (m < 60) return Math.round(m) + 'min';
+  const h = Math.floor(m/60), r = Math.round(m%60);
+  return r > 0 ? `${h}h${String(r).padStart(2,'0')}` : `${h}h`;
+}
+
+// ===== STATE =====
+let currentUser = null;
+let studentName = '';
+let roomChannel = null;
+let presenceOnlineCount = 0;
+let tickInterval = null;
+let liveStudiers = [];   // DB: active_study_status where is_active=true
+let rankingData = [];    // DB: aggregated study_sessions
+let activePeriod = 'today';
+let rankingLoading = false;
+
+// ===== MY TIMER STATE =====
+function readMyTimerState() {
+  try {
+    const raw = localStorage.getItem(TIMER_KEY);
+    if (!raw) return { isStudying:false, elapsedSecs:0, discipline:'', startTimestamp:null };
+    const s = JSON.parse(raw);
+    let elapsed = s.timerSeconds||0;
+    if (s.timerRunning && s.startTimestamp) elapsed = Math.floor((Date.now()-s.startTimestamp)/1000);
+    return { isStudying:s.timerRunning||false, elapsedSecs:elapsed, discipline:s.discipline||'', startTimestamp:s.startTimestamp||null, timerSeconds:s.timerSeconds||0 };
+  } catch(e) {}
+  return { isStudying:false, elapsedSecs:0, discipline:'', startTimestamp:null };
+}
+
+// ===== PERIOD DATE RANGES =====
+function getPeriodDates(period) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  switch(period) {
+    case 'today':  return { start: today.toISOString(), end: new Date(today.getTime()+86400000).toISOString() };
+    case 'week': {
+      const d = today.getDay();
+      const mon = new Date(today.getTime()-((d===0?6:d-1)*86400000));
+      return { start: mon.toISOString(), end: null };
+    }
+    case 'month': return { start: new Date(now.getFullYear(),now.getMonth(),1).toISOString(), end: null };
+    case 'total': return { start: null, end: null };
+    default:      return { start: today.toISOString(), end: new Date(today.getTime()+86400000).toISOString() };
+  }
+}
+
+// ===== DB: LOAD LIVE STUDIERS =====
+async function loadLiveStudiers() {
+  try {
+    liveStudiers = await Data.getActiveStudiers();
+  } catch(e) { liveStudiers = []; }
+  renderLiveNow();
+  updateStats();
+}
+
+// ===== DB: LOAD RANKING =====
+async function loadRanking(period) {
+  if (rankingLoading) return;
+  rankingLoading = true;
+  document.getElementById('rankingList').innerHTML = '<div class="loading-overlay"><div class="spinner"></div></div>';
+  try {
+    const { start, end } = getPeriodDates(period);
+    rankingData = await Data.getRankingData({ start, end });
+  } catch(e) { rankingData = []; }
+  rankingLoading = false;
+  renderRankingTable();
+  updateStats();
+}
+
+// ===== RENDER: LIVE NOW =====
+function renderLiveNow() {
+  const grid = document.getElementById('liveGrid');
+  const badge = document.getElementById('liveBadge');
+  if (!grid) return;
+
+  if (badge) badge.textContent = liveStudiers.length;
+
+  if (liveStudiers.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Nenhum aluno estudando no momento
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = liveStudiers.map(s => {
+    const isMe = s.user_id === currentUser?.id;
+    const color = s.avatar_color || avatarColor(s.user_id);
+    const elapsed = s.start_timestamp ? Math.floor((Date.now()-s.start_timestamp)/1000) : 0;
+    return `<div class="live-card${isMe?' live-card-me':''}">
+      <div class="live-card-avatar" style="background:${color}">
+        ${initials(s.display_name||'?')}
+        <div class="live-card-ring"></div>
+      </div>
+      <div class="live-card-name">${s.display_name||'Aluno'}${isMe?' ✦':''}</div>
+      <div class="live-card-timer" id="ltimer-${s.user_id}">${fmtSecs(elapsed)}</div>
+      <div class="live-card-disc">${s.discipline||'Estudando'}</div>
+    </div>`;
+  }).join('');
+}
+
+// ===== RENDER: RANKING TABLE =====
+function renderRankingTable() {
+  const list = document.getElementById('rankingList');
+  const badge = document.getElementById('rankingBadge');
+  const liveSet = new Set(liveStudiers.map(s => s.user_id));
+  const posClasses = ['gold','silver','bronze'];
+  const medals = ['🥇','🥈','🥉'];
+
+  if (rankingData.length === 0) {
+    list.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Nenhuma sessão registrada neste período
+    </div>`;
+    if (badge) { badge.textContent='0 alunos'; badge.className='card-badge offline'; }
+    return;
+  }
+
+  list.innerHTML = rankingData.map((m, i) => {
+    const isMe = m.user_id === currentUser?.id;
+    const color = m.avatar_color || avatarColor(m.user_id);
+    const pos = i < 3 ? `<span class="rank-pos ${posClasses[i]}">${medals[i]}</span>` : `<span class="rank-pos">${i+1}</span>`;
+    const isLive = liveSet.has(m.user_id);
+    const liveDot = isLive ? '<span class="rank-live-dot"></span>' : '';
+    const parts = [];
+    if (m.questions > 0) parts.push(`${m.questions} quest${m.questions!==1?'ões':'ão'}`);
+    parts.push(`${m.sessions} sess${m.sessions!==1?'ões':'ão'}`);
+    if (m.subjects > 0) parts.push(`${m.subjects} disciplina${m.subjects!==1?'s':''}`);
+    return `<div class="rank-item${isMe?' me':''}">
+      ${pos}
+      <div class="rank-avatar" style="background:${color}">${initials(m.display_name)}</div>
+      <div class="rank-info">
+        <div class="rank-name">${m.display_name||'Aluno'}${isMe?' (você)':''} ${liveDot}</div>
+        <div class="rank-sub${isLive?' studying':''}">${isLive?'<span style="color:var(--success)">● Ao vivo</span> · ':''} ${parts.join(' · ')}</div>
+      </div>
+      <div class="rank-time">${fmtMins(m.minutes)}</div>
+    </div>`;
+  }).join('');
+
+  if (badge) {
+    badge.textContent=`${rankingData.length} aluno${rankingData.length!==1?'s':''}`;
+    badge.className='card-badge connected';
+  }
+}
+
+// ===== PODIUM =====
+function updatePodium() {
+  const el = document.getElementById('podiumMini');
+  const label = document.getElementById('podiumPeriodLabel');
+  if (!el) return;
+  const periodNames = { today:'Hoje', week:'Semana', month:'Mês', total:'Total' };
+  if (label) label.textContent = `Top 3 — ${periodNames[activePeriod]||''}`;
+  const top3 = rankingData.slice(0,3);
+  const medals = ['🥇','🥈','🥉'];
+  if (top3.length === 0) {
+    el.innerHTML = medals.map(m => `<div class="podium-row"><span class="podium-medal">${m}</span><span class="podium-name" style="color:var(--text-muted)">—</span></div>`).join('');
+    return;
+  }
+  el.innerHTML = medals.map((medal, i) => {
+    const m = top3[i];
+    if (!m) return `<div class="podium-row"><span class="podium-medal">${medal}</span><span class="podium-name" style="color:var(--text-muted)">—</span></div>`;
+    const isMe = m.user_id === currentUser?.id;
+    return `<div class="podium-row">
+      <span class="podium-medal">${medal}</span>
+      <span class="podium-name">${m.display_name}${isMe?' ✦':''}</span>
+      <span class="podium-hrs">${fmtMins(m.minutes)}</span>
+    </div>`;
+  }).join('');
+}
+
+// ===== STATS STRIP =====
+function updateStats() {
+  document.getElementById('statStudying').textContent = liveStudiers.length;
+  document.getElementById('statOnline').textContent = presenceOnlineCount || liveStudiers.length;
+
+  const myIdx = rankingData.findIndex(m => m.user_id === currentUser?.id);
+  document.getElementById('statMyPos').textContent = myIdx >= 0 ? `#${myIdx+1}` : '—';
+
+  const n = liveStudiers.length;
+  document.getElementById('heroSub').textContent = n > 0
+    ? `${n} aluno${n!==1?'s':''} estudando agora`
+    : 'Nenhum aluno estudando agora';
+
+  updatePodium();
+}
+
+// ===== MY STATUS CARD =====
+function updateMyStatusCard() {
+  const state = readMyTimerState();
+  const card = document.getElementById('myStatusCard');
+  const avatarEl = document.getElementById('myStatusAvatar');
+  const label = document.getElementById('myStatusLabel');
+  const timer = document.getElementById('myStatusTimer');
+  const disc = document.getElementById('myStatusDisc');
+  const goBtn = document.getElementById('statusGoBtn');
+  if (!card) return;
+
+  if (state.isStudying) {
+    card.classList.remove('idle');
+    label.textContent = 'Estudando agora';
+    timer.textContent = fmtSecs(state.elapsedSecs);
+    timer.classList.add('active');
+    disc.textContent = state.discipline || 'Sessão em andamento';
+    goBtn.textContent = 'Ver Sessão →';
+    if (avatarEl && !avatarEl.querySelector('.avatar-ring')) {
+      avatarEl.insertAdjacentHTML('beforeend','<div class="avatar-ring"></div>');
+    }
+  } else if (state.elapsedSecs > 0) {
+    card.classList.add('idle');
+    label.textContent = 'Sessão pausada';
+    timer.textContent = fmtSecs(state.elapsedSecs);
+    timer.classList.remove('active');
+    disc.textContent = state.discipline || 'Pausado';
+    goBtn.textContent = 'Continuar →';
+    if (avatarEl) { const r=avatarEl.querySelector('.avatar-ring'); if(r) r.remove(); }
+  } else {
+    card.classList.add('idle');
+    label.textContent = 'Meu Status';
+    timer.textContent = '—';
+    timer.classList.remove('active');
+    disc.textContent = 'Nenhuma sessão ativa';
+    goBtn.textContent = 'Ir Estudar →';
+    if (avatarEl) { const r=avatarEl.querySelector('.avatar-ring'); if(r) r.remove(); }
+  }
+  if (currentUser && avatarEl) {
+    avatarEl.style.background = avatarColor(currentUser.id);
+    [...avatarEl.childNodes].filter(n => n.nodeType===Node.TEXT_NODE).forEach(n => n.remove());
+    avatarEl.insertBefore(document.createTextNode(initials(studentName)), avatarEl.firstChild);
+  }
+}
+
+// ===== REALTIME SUBSCRIPTION =====
+function subscribeActiveStatus() {
+  try {
+    sb.channel('active-status-sala')
+      .on('postgres_changes', { event:'*', schema:'public', table:'active_study_status' }, () => {
+        loadLiveStudiers();
+      })
+      .subscribe();
+  } catch(e) { /* silently fail if realtime not available */ }
+}
+
+// ===== PRESENCE (online count only) =====
+async function broadcastMyState() {
+  if (!roomChannel || !currentUser) return;
+  await roomChannel.track({ user_id: currentUser.id, updated_at: Date.now() });
+}
+function handlePresenceSync(state) {
+  presenceOnlineCount = Object.keys(state).length;
+  updateStats();
+}
+
+// ===== ROOM =====
+async function initRoom() {
+  const connBadge = document.getElementById('connBadge');
+  roomChannel = sb.channel('memoriplan-sala-v2', {
+    config: { presence: { key: currentUser.id } }
+  });
+  roomChannel.on('presence', { event:'sync' }, () => {
+    handlePresenceSync(roomChannel.presenceState());
+  });
+  await roomChannel.subscribe(async (status) => {
+    if (status === 'SUBSCRIBED') {
+      connBadge.textContent = '● Conectado';
+      connBadge.className = 'conn-badge connected';
+      await broadcastMyState();
+    } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+      connBadge.textContent = '⚠ Erro';
+      connBadge.className = 'conn-badge';
+    }
+  });
+  setInterval(broadcastMyState, 15000);
+}
+
+// ===== LIVE TICK =====
+function startTick() {
+  tickInterval = setInterval(() => {
+    updateMyStatusCard();
+    // Update live card timers
+    liveStudiers.forEach(s => {
+      if (!s.start_timestamp) return;
+      const el = document.getElementById(`ltimer-${s.user_id}`);
+      if (el) el.textContent = fmtSecs(Math.floor((Date.now()-s.start_timestamp)/1000));
+    });
+  }, 1000);
+  // Refresh live list every 60s (in case Realtime missed an event)
+  setInterval(loadLiveStudiers, 60000);
+}
+
+// ===== PERIOD TABS =====
+function initRankTabs() {
+  document.querySelectorAll('.rank-tab').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      document.querySelectorAll('.rank-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activePeriod = btn.dataset.period;
+      await loadRanking(activePeriod);
+    });
+  });
+}
+
+// ===== CLEANUP =====
+window.addEventListener('beforeunload', () => {
+  if (roomChannel) { roomChannel.untrack(); roomChannel.unsubscribe(); }
+  if (tickInterval) clearInterval(tickInterval);
+});
+
+// ===== INIT =====
+async function init() {
+  currentUser = await checkAuth();
+  if (!currentUser) return;
+
+  const settings = await Data.getSettings();
+  studentName = settings.student_name
+    || currentUser.user_metadata?.full_name
+    || currentUser.user_metadata?.display_name
+    || currentUser.user_metadata?.name
+    || currentUser.email.split('@')[0];
+
+  // Sincroniza nome no banco para aparecer no ranking de outros alunos
+  const _ts = readMyTimerState();
+  Data.setActiveStatus({
+    is_active: _ts.isStudying,
+    discipline: _ts.discipline || '',
+    start_timestamp: _ts.isStudying ? _ts.startTimestamp : null,
+    paused_secs: _ts.elapsedSecs || 0,
+    display_name: studentName,
+    avatar_color: avatarColor(currentUser.id)
+  }).catch(() => {});
+
+  const avatarEl = document.getElementById('myStatusAvatar');
+  if (avatarEl) {
+    avatarEl.style.background = avatarColor(currentUser.id);
+    avatarEl.textContent = initials(studentName);
+  }
+
+  updateMyStatusCard();
+
+  window.addEventListener('storage', (e) => {
+    if (e.key === TIMER_KEY) updateMyStatusCard();
+  });
+
+  initRankTabs();
+
+  // Load DB data in parallel
+  await Promise.all([loadLiveStudiers(), loadRanking('today')]);
+
+  subscribeActiveStatus();
+  await initRoom();
+  startTick();
+  injectNav();
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

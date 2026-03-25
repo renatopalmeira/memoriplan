@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>✅ Checklist — Vercel Deploy</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 600px;
+      width: 100%;
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px 30px;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+    .header p {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+    .content { padding: 30px; }
+    .section {
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #667eea;
+      margin-bottom: 12px;
+    }
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .checklist-item:hover {
+      background: #eeeeee;
+    }
+    .checklist-item.checked {
+      background: #e8f5e9;
+      border-left-color: #4caf50;
+    }
+    .checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      margin-right: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      font-size: 12px;
+      color: #4caf50;
+      font-weight: bold;
+    }
+    .checklist-item.checked .checkbox {
+      background: #4caf50;
+      border-color: #4caf50;
+      color: white;
+    }
+    .item-content {
+      flex: 1;
+    }
+    .item-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 4px;
+    }
+    .item-desc {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.4;
+    }
+    .item-link {
+      display: inline-block;
+      margin-top: 6px;
+      color: #667eea;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .item-link:hover {
+      text-decoration: underline;
+    }
+    .progress-bar {
+      height: 8px;
+      background: #eee;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+      font-size: 11px;
+      color: #666;
+      margin-top: 20px;
+    }
+    .stat-num {
+      font-size: 20px;
+      font-weight: 700;
+      color: #667eea;
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+    .btn-secondary {
+      background: #f5f5f5;
+      color: #667eea;
+      border: 2px solid #667eea;
+    }
+    .btn-secondary:hover {
+      background: #f0f0f0;
+    }
+    .success-message {
+      background: #e8f5e9;
+      border: 1px solid #4caf50;
+      color: #2e7d32;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      margin-top: 20px;
+      display: none;
+      text-align: center;
+    }
+    .success-message.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🚀 MemoriPlan Vercel Deploy</h1>
+    <p>Seu checklist para ir "ao vivo"</p>
+  </div>
+
+  <div class="content">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="stats">
+      <div>
+        <div class="stat-num" id="completed">0</div>
+        <div>Completas</div>
+      </div>
+      <div>
+        <div class="stat-num" id="remaining">6</div>
+        <div>Faltando</div>
+      </div>
+    </div>
+
+    <!-- FASE 1: GIT -->
+    <div class="section">
+      <div class="section-title">📤 FASE 1: Código</div>
+      
+      <div class="checklist-item" onclick="toggleCheck(this, 0)">
+        <div class="checkbox">✓</div>
+        <div class="item-content">
+          <div class="item-title">Push do código ao GitHub</div>
+          <div class="item-desc">Use VS Code → Source Control → Commit + Push</div>
+          <a href="FAZER-PUSH.md" class="item-link">📖 Ver instruções</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- FASE 2: VERCEL -->
+    <div class="section">
+      <div class="section-title">⚙️ FASE 2: Vercel Configuration</div>
+
+      <div class="checklist-item" onclick="toggleCheck(this, 1)">
+        <div class="checkbox">✓</div>
+        <div class="item-content">
+          <div class="item-title">Adicionar Environment Variables</div>
+          <div class="item-desc">
+            Vercel Dashboard → Settings → Environment Variables<br>
+            VITE_SUPABASE_URL<br>
+            VITE_SUPABASE_ANON_KEY
+          </div>
+          <a href="https://vercel.com/dashboard" class="item-link" target="_blank">🌐 Ir ao Vercel</a>
+        </div>
+      </div>
+
+      <div class="checklist-item" onclick="toggleCheck(this, 2)">
+        <div class="checkbox">✓</div>
+        <div class="item-content">
+          <div class="item-title">Limpar Build Cache</div>
+          <div class="item-desc">Settings → Build Cache → Clear All → Redeploy</div>
+          <a href="QUICK-FIX.md" class="item-link">📖 Passo a passo</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- FASE 3: SUPABASE -->
+    <div class="section">
+      <div class="section-title">🔐 FASE 3: Supabase Configuration</div>
+
+      <div class="checklist-item" onclick="toggleCheck(this, 3)">
+        <div class="checkbox">✓</div>
+        <div class="item-content">
+          <div class="item-title">Configurar CORS</div>
+          <div class="item-desc">Project Settings → API → CORS → Adicionar seu domínio</div>
+          <a href="https://app.supabase.com" class="item-link" target="_blank">🌐 Ir ao Supabase</a>
+        </div>
+      </div>
+
+      <div class="checklist-item" onclick="toggleCheck(this, 4)">
+        <div class="checkbox">✓</div>
+        <div class="item-content">
+          <div class="item-title">Configurar URL Configuration</div>
+          <div class="item-desc">Authentication → URL Configuration → Site URL + Redirects</div>
+          <a href="SETUP-VERCEL.md" class="item-link">📖 URLs necessárias</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- FASE 4: TEST -->
+    <div class="section">
+      <div class="section-title">🧪 FASE 4: Testes</div>
+
+      <div class="checklist-item" onclick="toggleCheck(this, 5)">
+        <div class="checkbox">✓</div>
+        <div class="item-content">
+          <div class="item-title">Testar acesso e dados</div>
+          <div class="item-desc">
+            1. Aceess seu site<br>
+            2. F12 → Console<br>
+            3. Acesse /debug.html para diagnóstico
+          </div>
+          <a href="debug.html" class="item-link">🔧 Abrir debug.html</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="success-message" id="successMsg">
+      ✅ Parabéns! Todas as etapas completadas! Seu app está ao vivo 🎉
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn-secondary" onclick="resetAll()">🔄 Resetar</button>
+      <button class="btn-primary" onclick="showSummary()">📋 Ver Resumo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const items = 6;
+  let completed = 0;
+
+  function toggleCheck(element, index) {
+    element.classList.toggle('checked');
+    updateProgress();
+    
+    // Salvar no localStorage
+    let checked = JSON.parse(localStorage.getItem('vercelChecklist') || '[]');
+    if (element.classList.contains('checked')) {
+      if (!checked.includes(index)) checked.push(index);
+    } else {
+      checked = checked.filter(i => i !== index);
+    }
+    localStorage.setItem('vercelChecklist', JSON.stringify(checked));
+  }
+
+  function updateProgress() {
+    const checkedItems = document.querySelectorAll('.checklist-item.checked').length;
+    completed = checkedItems;
+    const remaining = items - checkedItems;
+    
+    document.getElementById('completed').textContent = completed;
+    document.getElementById('remaining').textContent = remaining;
+    
+    const percent = (checkedItems / items) * 100;
+    document.getElementById('progressFill').style.width = percent + '%';
+
+    if (completed === items) {
+      document.getElementById('successMsg').classList.add('show');
+    } else {
+      document.getElementById('successMsg').classList.remove('show');
+    }
+  }
+
+  function resetAll() {
+    if (confirm('Resetar todo o progresso?')) {
+      document.querySelectorAll('.checklist-item').forEach(item => {
+        item.classList.remove('checked');
+      });
+      localStorage.removeItem('vercelChecklist');
+      updateProgress();
+    }
+  }
+
+  function showSummary() {
+    const checklist = JSON.parse(localStorage.getItem('vercelChecklist') || '[]');
+    const total = items;
+    const msg = `Progresso: ${checklist.length}/${total} etapas completas\n\n` +
+                (checklist.length === total ? 
+                  '✅ Tudo pronto! Deploy concluído!' : 
+                  `Faltam ${total - checklist.length} etapas`);
+    alert(msg);
+  }
+
+  // Restaurar estado ao carregar
+  window.addEventListener('load', () => {
+    const checked = JSON.parse(localStorage.getItem('vercelChecklist') || '[]');
+    document.querySelectorAll('.checklist-item').forEach((item, index) => {
+      if (checked.includes(index)) {
+        item.classList.add('checked');
+      }
+    });
+    updateProgress();
+  });
+</script>
+
+</body>
+</html>

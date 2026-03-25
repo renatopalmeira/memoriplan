@@ -122,6 +122,45 @@ async function loginGoogle() {
 
 // Logout
 async function logout() {
+  // Encerra cronômetro ativo e salva a sessão antes de deslogar
+  try {
+    const TIMER_KEY = 'memoriplan_timer_state';
+    const raw = localStorage.getItem(TIMER_KEY);
+    if (raw) {
+      const state = JSON.parse(raw);
+      let elapsed = state.timerSeconds || 0;
+      if (state.timerRunning && state.startTimestamp) {
+        elapsed = Math.floor((Date.now() - state.startTimestamp) / 1000);
+      }
+      if (elapsed >= 10) {
+        const minutes = elapsed / 60;
+        const discipline = state.discipline || 'Estudando';
+        if (typeof Data !== 'undefined' && Data.addSession) {
+          await Data.addSession({
+            date: new Date().toISOString(),
+            discipline,
+            category: 'Geral',
+            topic: 'Sessão encerrada ao sair',
+            minutes: Math.round(minutes * 100) / 100,
+            questions: 0,
+            material: ''
+          });
+        }
+      }
+      if (typeof Data !== 'undefined' && Data.setActiveStatus) {
+        await Data.setActiveStatus({
+          is_active: false,
+          discipline: '',
+          start_timestamp: null,
+          paused_secs: 0
+        }).catch(() => {});
+      }
+      localStorage.removeItem(TIMER_KEY);
+    }
+  } catch (e) {
+    console.warn('[MemoriPlan] logout: erro ao encerrar sessão do cronômetro:', e);
+  }
+
   try {
     if (sb) await sb.auth.signOut();
     console.log('[Auth] ✅ Logout bem-sucedido');

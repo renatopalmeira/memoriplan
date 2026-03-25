@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="/img/logo-icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu Perfil — MemoriPlan</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+<style>
+body {
+  background: linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 50%, #1A1A1A 100%);
+  min-height: 100vh;
+  padding: 40px 24px 80px;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle at 30% 40%, rgba(232,56,79,0.1) 0%, transparent 50%),
+              radial-gradient(circle at 70% 60%, rgba(59,130,246,0.06) 0%, transparent 50%);
+  animation: heroGlow 20s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes heroGlow { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-5%,-3%)} }
+
+.profile-wrapper {
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.profile-heading {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+
+.profile-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  animation: fadeUp 0.4s ease;
+}
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+
+/* TABS */
+.profile-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 16px 20px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.profile-tab {
+  padding: 8px 16px;
+  border-radius: 8px 8px 0 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.18s;
+  position: relative;
+  bottom: -1px;
+}
+
+.profile-tab:hover {
+  color: var(--text-primary);
+  background: var(--border-light);
+}
+
+.profile-tab.active {
+  background: var(--bg-card);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-bottom: 1px solid var(--bg-card);
+}
+
+.profile-panel {
+  display: none;
+  padding: 28px 28px 32px;
+}
+
+.profile-panel.active {
+  display: block;
+}
+
+/* AVATAR */
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.avatar-circle {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E8384F, #FF6B6B);
+  color: #fff;
+  font-size: 32px;
+  font-weight: 700;
+  font-family: 'Space Grotesk', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(232,56,79,0.3);
+}
+
+.avatar-circle:hover .avatar-overlay {
+  opacity: 1;
+}
+
+.avatar-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0; left: 0;
+}
+
+.avatar-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 2;
+  border-radius: 50%;
+}
+
+.avatar-overlay svg {
+  width: 22px;
+  height: 22px;
+  color: #fff;
+}
+
+.avatar-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+.avatar-uploading {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-top: 6px;
+  display: none;
+}
+
+/* PASSWORD FIELDS */
+.section-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 20px;
+}
+
+/* RESET TAB */
+.warning-box {
+  background: var(--accent-soft);
+  border: 1.5px solid rgba(232,56,79,0.2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.warning-box svg {
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.warning-box p {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1.5;
+}
+
+.reset-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  margin-bottom: 10px;
+  transition: border-color 0.18s;
+  cursor: pointer;
+}
+
+.reset-option:hover {
+  border-color: var(--accent);
+}
+
+.reset-option input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 1px;
+  cursor: pointer;
+}
+
+.reset-option-text {
+  flex: 1;
+}
+
+.reset-option-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.reset-option-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.btn-danger {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 20px;
+}
+
+.btn-danger:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(232,56,79,0.35);
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: wait;
+  transform: none;
+  box-shadow: none;
+}
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  padding: 24px;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: var(--shadow-xl);
+  transform: scale(0.95);
+  transition: transform 0.2s;
+}
+
+.modal-overlay.show .modal-card {
+  transform: scale(1);
+}
+
+.modal-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--accent-soft);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.modal-icon svg {
+  width: 22px;
+  height: 22px;
+  color: var(--accent);
+}
+
+.modal-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.modal-body {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-modal-cancel {
+  flex: 1;
+  padding: 11px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.btn-modal-cancel:hover {
+  border-color: var(--text-muted);
+  color: var(--text-primary);
+}
+
+.btn-modal-confirm {
+  flex: 1;
+  padding: 11px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.btn-modal-confirm:hover {
+  background: var(--accent-hover);
+}
+
+.btn-modal-confirm:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+/* HIDDEN FILE INPUT */
+#avatarInput { display: none; }
+
+/* Overrides for dark mode inputs */
+html[data-theme="dark"] .form-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+</style>
+</head>
+<body>
+
+<div class="profile-wrapper">
+  <h1 class="profile-heading">Meu Perfil</h1>
+
+  <div class="profile-card">
+    <div class="profile-tabs">
+      <button class="profile-tab active" onclick="switchTab('perfil')">Meu Perfil</button>
+      <button class="profile-tab" onclick="switchTab('senha')">Redefinir Senha</button>
+      <button class="profile-tab" onclick="switchTab('reset')">Resetar Progresso</button>
+    </div>
+
+    <!-- TAB 1: MEU PERFIL -->
+    <div class="profile-panel active" id="panel-perfil">
+      <div class="avatar-section">
+        <div class="avatar-circle" id="avatarCircle" onclick="document.getElementById('avatarInput').click()">
+          <span id="avatarInitial">?</span>
+          <div class="avatar-overlay">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+        </div>
+        <div class="avatar-hint">Clique para alterar a foto</div>
+        <div class="avatar-uploading" id="avatarUploading">Enviando foto...</div>
+        <input type="file" id="avatarInput" accept="image/png,image/jpeg,image/jpg" onchange="handleAvatarUpload(this)">
+      </div>
+
+      <div class="error-msg" id="perfilError"></div>
+      <div class="success-msg" id="perfilSuccess"></div>
+
+      <div class="form-group">
+        <label class="form-label" for="inputName">Nome</label>
+        <input class="form-input" id="inputName" type="text" placeholder="Seu nome completo">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="inputEmail">E-mail</label>
+        <input class="form-input" id="inputEmail" type="email" disabled>
+      </div>
+
+      <button class="btn-primary" id="btnSavePerfil" onclick="handleSavePerfil()">Salvar alterações</button>
+    </div>
+
+    <!-- TAB 2: REDEFINIR SENHA -->
+    <div class="profile-panel" id="panel-senha">
+      <div class="section-title">Definir nova senha</div>
+
+      <div class="error-msg" id="senhaError"></div>
+      <div class="success-msg" id="senhaSuccess"></div>
+
+      <div class="form-group">
+        <label class="form-label" for="inputNewPass">Nova senha</label>
+        <input class="form-input" id="inputNewPass" type="password" placeholder="Mínimo 6 caracteres">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="inputConfirmPass">Confirmar nova senha</label>
+        <input class="form-input" id="inputConfirmPass" type="password" placeholder="Repita a senha">
+      </div>
+
+      <button class="btn-primary" id="btnSaveSenha" onclick="handleSaveSenha()">Atualizar senha</button>
+    </div>
+
+    <!-- TAB 3: RESETAR PROGRESSO -->
+    <div class="profile-panel" id="panel-reset">
+      <div class="warning-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <p>Esta ação é irreversível. Os dados selecionados serão apagados permanentemente.</p>
+      </div>
+
+      <div class="error-msg" id="resetError"></div>
+      <div class="success-msg" id="resetSuccess"></div>
+
+      <label class="reset-option">
+        <input type="checkbox" id="checkSessoes">
+        <div class="reset-option-text">
+          <span class="reset-option-label">Sessões de estudo registradas</span>
+          <span class="reset-option-note">Remove todas as sessões de estudo salvas</span>
+        </div>
+      </label>
+
+      <label class="reset-option">
+        <input type="checkbox" id="checkCronograma">
+        <div class="reset-option-text">
+          <span class="reset-option-label">Progresso do cronograma</span>
+          <span class="reset-option-note">Desmarca todos os itens concluídos no cronograma</span>
+        </div>
+      </label>
+
+      <label class="reset-option" style="opacity:0.65;pointer-events:none;cursor:default;">
+        <input type="checkbox" disabled checked>
+        <div class="reset-option-text">
+          <span class="reset-option-label">Questões respondidas</span>
+          <span class="reset-option-note">As questões ficam dentro das sessões — ao resetar as sessões acima, as questões também são apagadas.</span>
+        </div>
+      </label>
+
+      <button class="btn-danger" id="btnReset" onclick="handleResetClick()">Resetar dados selecionados</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE CONFIRMAÇÃO -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-card">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+    <div class="modal-title">Tem certeza?</div>
+    <div class="modal-body" id="modalBodyText">Esta ação não pode ser desfeita. Os dados selecionados serão permanentemente apagados da sua conta.</div>
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-modal-confirm" id="btnModalConfirm" onclick="handleConfirmReset()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="js/config.js"></script>
+<script defer src="js/auth.js"></script>
+<script defer src="js/data.js"></script>
+<script defer src="js/nav.js"></script>
+<script defer src="js/sw-manager.js"></script>
+
+<script>
+// ===== TAB SWITCHING =====
+function switchTab(tab) {
+  document.querySelectorAll('.profile-tab').forEach((btn, i) => {
+    const tabs = ['perfil', 'senha', 'reset'];
+    btn.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.profile-panel').forEach(panel => {
+    panel.classList.toggle('active', panel.id === 'panel-' + tab);
+  });
+}
+
+// ===== AVATAR =====
+function _setAvatarDisplay(url, name) {
+  const circle = document.getElementById('avatarCircle');
+  const initial = document.getElementById('avatarInitial');
+  if (url) {
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = name || '';
+    // Remove old img if any
+    const oldImg = circle.querySelector('img');
+    if (oldImg) oldImg.remove();
+    initial.style.display = 'none';
+    circle.insertBefore(img, circle.querySelector('.avatar-overlay'));
+  } else {
+    const letter = (name || 'U').charAt(0).toUpperCase();
+    initial.textContent = letter;
+    initial.style.display = '';
+    const oldImg = circle.querySelector('img');
+    if (oldImg) oldImg.remove();
+  }
+}
+
+async function handleAvatarUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  if (file.size > 2 * 1024 * 1024) {
+    showMsg('perfilError', 'A imagem deve ter no máximo 2MB.');
+    input.value = '';
+    return;
+  }
+
+  const uploadingEl = document.getElementById('avatarUploading');
+  uploadingEl.style.display = 'block';
+  clearMsgs('perfilError', 'perfilSuccess');
+
+  const url = await Data.uploadAvatar(file);
+  uploadingEl.style.display = 'none';
+
+  if (!url) {
+    showMsg('perfilError', 'Erro ao enviar foto. Verifique se o bucket "avatars" foi criado no Supabase.');
+    input.value = '';
+    return;
+  }
+
+  const name = document.getElementById('inputName').value.trim();
+  _setAvatarDisplay(url, name);
+
+  const ok = await Data.updateProfile({ avatar_url: url });
+  if (ok) {
+    showMsg('perfilSuccess', 'Foto de perfil atualizada com sucesso!');
+    // Refresh nav user info
+    if (typeof _loadNavUserInfo === 'function') _loadNavUserInfo();
+  } else {
+    showMsg('perfilError', 'Foto enviada mas não foi possível salvar no perfil. Tente novamente.');
+  }
+  input.value = '';
+}
+
+// ===== SAVE PROFILE =====
+async function handleSavePerfil() {
+  const name = document.getElementById('inputName').value.trim();
+  const btn = document.getElementById('btnSavePerfil');
+
+  clearMsgs('perfilError', 'perfilSuccess');
+
+  if (!name) {
+    showMsg('perfilError', 'Informe seu nome.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+
+  const ok = await Data.updateProfile({ name });
+
+  btn.disabled = false;
+  btn.textContent = 'Salvar alterações';
+
+  if (ok) {
+    showMsg('perfilSuccess', 'Perfil atualizado com sucesso!');
+    // Update avatar initial if no photo
+    const circle = document.getElementById('avatarCircle');
+    if (!circle.querySelector('img')) {
+      document.getElementById('avatarInitial').textContent = name.charAt(0).toUpperCase();
+    }
+    if (typeof _loadNavUserInfo === 'function') _loadNavUserInfo();
+  } else {
+    showMsg('perfilError', 'Não foi possível salvar. Tente novamente.');
+  }
+}
+
+// ===== CHANGE PASSWORD =====
+async function handleSaveSenha() {
+  const newPass = document.getElementById('inputNewPass').value;
+  const confirmPass = document.getElementById('inputConfirmPass').value;
+  const btn = document.getElementById('btnSaveSenha');
+
+  clearMsgs('senhaError', 'senhaSuccess');
+
+  if (!newPass || !confirmPass) {
+    showMsg('senhaError', 'Preencha os dois campos de senha.');
+    return;
+  }
+  if (newPass.length < 6) {
+    showMsg('senhaError', 'A senha deve ter pelo menos 6 caracteres.');
+    return;
+  }
+  if (newPass !== confirmPass) {
+    showMsg('senhaError', 'As senhas não coincidem.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Atualizando...';
+
+  const { error } = await sb.auth.updateUser({ password: newPass });
+
+  btn.disabled = false;
+  btn.textContent = 'Atualizar senha';
+
+  if (error) {
+    showMsg('senhaError', error.message || 'Erro ao atualizar senha. Tente novamente.');
+  } else {
+    showMsg('senhaSuccess', 'Senha atualizada com sucesso!');
+    document.getElementById('inputNewPass').value = '';
+    document.getElementById('inputConfirmPass').value = '';
+  }
+}
+
+// ===== RESET PROGRESS =====
+function handleResetClick() {
+  const sessoes = document.getElementById('checkSessoes').checked;
+  const cronograma = document.getElementById('checkCronograma').checked;
+
+  clearMsgs('resetError', 'resetSuccess');
+
+  if (!sessoes && !cronograma) {
+    showMsg('resetError', 'Selecione pelo menos uma opção para resetar.');
+    return;
+  }
+
+  const items = [];
+  if (sessoes) items.push('sessões de estudo');
+  if (cronograma) items.push('progresso do cronograma');
+
+  document.getElementById('modalBodyText').textContent =
+    'Você está prestes a apagar: ' + items.join(' e ') + '. Esta ação não pode ser desfeita.';
+
+  document.getElementById('confirmModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('confirmModal').classList.remove('show');
+}
+
+async function handleConfirmReset() {
+  const sessoes = document.getElementById('checkSessoes').checked;
+  const cronograma = document.getElementById('checkCronograma').checked;
+  const btn = document.getElementById('btnModalConfirm');
+
+  btn.disabled = true;
+  btn.textContent = 'Processando...';
+
+  let allOk = true;
+
+  if (sessoes) {
+    const ok = await Data.resetSessions();
+    if (!ok) allOk = false;
+  }
+
+  if (cronograma) {
+    const ok = await Data.resetCronogramaProgress();
+    if (!ok) allOk = false;
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Confirmar';
+  closeModal();
+
+  if (allOk) {
+    document.getElementById('checkSessoes').checked = false;
+    document.getElementById('checkCronograma').checked = false;
+    showMsg('resetSuccess', 'Dados resetados com sucesso!');
+  } else {
+    showMsg('resetError', 'Ocorreu um erro ao resetar alguns dados. Tente novamente.');
+  }
+}
+
+// Close modal on overlay click
+document.getElementById('confirmModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ===== HELPERS =====
+function showMsg(id, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.classList.add('show');
+}
+
+function clearMsgs(...ids) {
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('show');
+  });
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', async () => {
+  const user = await getCurrentUser();
+  if (!user) { window.location.href = '/login.html'; return; }
+
+  // Fill email
+  document.getElementById('inputEmail').value = user.email || '';
+
+  // Load profile settings
+  const settings = await Data.getSettings();
+  const name = settings.student_name || user.user_metadata?.full_name || user.email?.split('@')[0] || '';
+  document.getElementById('inputName').value = name;
+
+  // Set avatar
+  _setAvatarDisplay(settings.avatar_url || null, name);
+});
+</script>
+</body>
+</html>
